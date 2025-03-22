@@ -2,6 +2,7 @@ import os
 import shutil
 recordingFiles = ['fcamera.hevc', 'ecamera.hevc', 'dcamera.hevc', 'qcamera.ts']
 logFiles = ['qlog', 'rlog']
+
 def generate_filelists(sourceVidDir, fileNames):
     filelists = {}
     dirs = os.listdir(sourceVidDir)
@@ -11,15 +12,15 @@ def generate_filelists(sourceVidDir, fileNames):
 
     for subdir in sorted(dirs, key=lambda x: int(x.split('--')[-1])):
         subdir_path = os.path.join(sourceVidDir, subdir)
-        # assert os.path.isdir(subdir_path):
-        timestamp = '--'.join(subdir.split('--')[:-1])  # Extract the timestamp part
-        if timestamp not in filelists:
-            filelists[timestamp] = {file_type: [] for file_type in fileNames}
-        # files = sorted(os.listdir(subdir_path), key=lambda x: int(x.split('--')[-1]))
+        assert os.path.isdir(subdir_path)
+        reccordingSessionName = '--'.join(subdir.split('--')[:-1])  # Extract the timestamp part
+        if reccordingSessionName not in filelists:
+            filelists[reccordingSessionName] = {file_type: [] for file_type in fileNames}
         for file_type in fileNames:
+            # if a directory does not contain a, say, .hevc file, it will not be added to the list
             if file_type not in os.listdir(subdir_path):
                 continue
-            filelists[timestamp][file_type].append(os.path.join('..','..',sourceVidDir, subdir, f'{file_type}'))
+            filelists[reccordingSessionName][file_type].append(os.path.join('..','..', sourceVidDir, subdir, f'{file_type}'))
     return filelists
 
 def moveLogFiles(destinationDir, filelists):
