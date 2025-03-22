@@ -24,23 +24,23 @@ def generate_filelists(sourceVidDir, fileNames):
     return filelists
 
 def moveLogFiles(destinationDir, filelists):
-    for timestamp, filelist in sorted(filelists.items()):
+    for reccordingSessionName, filelist in sorted(filelists.items()):
         # filelist is a dictionary of {'qlog': 'dir/dir/qlog', 'rlog': 'dir/dir/rlog'}
         # copy each file to destinationDir/timestamp
-        for file_type, originFilesList in filelist.items():
+        for fileType, originFilesList in filelist.items():
             #also rename each file to qlog-0, qlog-1, etc after move (copy, keep original files untouched)
             for i in range(len(originFilesList)):
-                print(f'Copying {originFilesList[i]} to {os.path.join(destinationDir, timestamp, f"{file_type}-{i}")}')
-                os.makedirs(os.path.join(destinationDir, timestamp), exist_ok=True)
-                shutil.copy(originFilesList[i], os.path.join(destinationDir, timestamp, f'{file_type}-{i}'))
-        print(f'Finished copying {timestamp}')
+                print(f'Copying {originFilesList[i]} to {os.path.join(destinationDir, reccordingSessionName, f"{fileType}-{i}")}')
+                os.makedirs(os.path.join(destinationDir, reccordingSessionName), exist_ok=True)
+                shutil.copy(originFilesList[i], os.path.join(destinationDir, reccordingSessionName, f'{fileType}-{i}'))
+        print(f'Finished copying {reccordingSessionName}')
 
 def write_filelists(filelists, output_directory):
-    for timestamp, filelist in sorted(filelists.items()):
-        for file_type, files in filelist.items():
-            timestamp_directory = os.path.join(output_directory, timestamp)
-            os.makedirs(timestamp_directory, exist_ok=True)
-            output_file = os.path.join(timestamp_directory, f'{file_type}.txt')
+    for reccordingSessionName, filelist in sorted(filelists.items()):
+        for fileType, files in filelist.items():
+            recordingSessionPath = os.path.join(output_directory, reccordingSessionName)
+            os.makedirs(recordingSessionPath, exist_ok=True)
+            output_file = os.path.join(recordingSessionPath, f'{fileType}.txt')
             with open(output_file, 'w') as f:
                 for file_path in files:
                     f.write(f'file \'{file_path}\'\n')
@@ -92,7 +92,7 @@ def logFileScript7z(log_raw_directory, log_compressed_directory):
 
 if __name__ == "__main__":
     input_directory = 'D:\\dch'
-    output_directory = '/home/xux8/dashcamprocessing/vidlist'
+    output_directory = 'D:\\dashcamfilelistoutput'
     log_raw_directory = '/home/xux8/dashcamprocessing/logs'
     log_compressed_directory = '/home/xux8/dashcamprocessing/logscompressed'
     filelists = generate_filelists(input_directory, fileNames=recordingFiles)
