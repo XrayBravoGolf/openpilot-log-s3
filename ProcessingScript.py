@@ -49,10 +49,10 @@ def moveLogFiles(destinationDir, filelists):
                 shutil.copy(originFilesList[i], os.path.join(destinationDir, reccordingSessionName, f'{fileType}-{i}'))
         print(f'Finished copying {reccordingSessionName}')
 
-def write_filelists(filelists, output_directory):
+def writeFilelists(filelists, outputDirectory):
     for reccordingSessionName, filelist in sorted(filelists.items()):
         for fileType, files in filelist.items():
-            recordingSessionPath = os.path.join(output_directory, reccordingSessionName)
+            recordingSessionPath = os.path.join(outputDirectory, reccordingSessionName)
             os.makedirs(recordingSessionPath, exist_ok=True)
             output_file = os.path.join(recordingSessionPath, f'{fileType}.txt')
             with open(output_file, 'w') as f:
@@ -110,7 +110,7 @@ if __name__ == "__main__":
     log_raw_directory = '/home/xux8/dashcamprocessing/logs'
     log_compressed_directory = '/home/xux8/dashcamprocessing/logscompressed'
     filelists = generateFilelists(input_directory, fileNames=recordingFiles)
-    write_filelists(filelists, output_directory)
+    writeFilelists(filelists, output_directory)
     concat_videos_script(output_directory, '/mnt/e/dashcamvids')
 
     #filelists = generate_filelists(input_directory, fileNames=logFiles)
