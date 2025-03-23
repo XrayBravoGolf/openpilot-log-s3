@@ -3,7 +3,9 @@ import shutil
 recordingFiles = ['fcamera.hevc', 'ecamera.hevc', 'dcamera.hevc', 'qcamera.ts']
 logFiles = ['qlog', 'rlog']
 
-def generate_filelists(sourceVidDir, fileNames):
+USING_NEW_TIMEINDEPENDENT_SESSION = True
+
+def generateFilelists(sourceVidDir, fileNames):
     filelists = {}
     dirs = os.listdir(sourceVidDir)
     #remove boot and crash
@@ -11,17 +13,29 @@ def generate_filelists(sourceVidDir, fileNames):
     dirs = list(set(dirs) - set(dirs_to_remove))
 
     for subdir in sorted(dirs, key=lambda x: int(x.split('--')[-1])):
-        subdir_path = os.path.join(sourceVidDir, subdir)
-        assert os.path.isdir(subdir_path)
-        reccordingSessionName = '--'.join(subdir.split('--')[:-1])  # Extract the timestamp part
-        if reccordingSessionName not in filelists:
-            filelists[reccordingSessionName] = {file_type: [] for file_type in fileNames}
-        for file_type in fileNames:
+        subdirPath = os.path.join(sourceVidDir, subdir)
+        assert os.path.isdir(subdirPath)
+        recordingSessionName = '--'.join(subdir.split('--')[:-1])  # Extract the timestamp part
+        if USING_NEW_TIMEINDEPENDENT_SESSION:
+            recordingSessionName = convertBootCounterToDecimal(recordingSessionName)
+        # otherwise sessionname is a timestamp
+        
+        if recordingSessionName not in filelists:
+            filelists[recordingSessionName] = {file_type: [] for file_type in fileNames}
+        for fileType in fileNames:
             # if a directory does not contain a, say, .hevc file, it will not be added to the list
-            if file_type not in os.listdir(subdir_path):
+            if fileType not in os.listdir(subdirPath):
                 continue
-            filelists[reccordingSessionName][file_type].append(os.path.join('..','..', sourceVidDir, subdir, f'{file_type}'))
+            filelists[recordingSessionName][fileType].append(os.path.join('..','..', sourceVidDir, subdir, f'{fileType}'))
     return filelists
+
+def convertBootCounterToDecimal(recordingSessionName):
+    [bootCounter, sessionID] = recordingSessionName.split('--')
+        # convert boot counter to 8 digits decimal
+    bootCounter = int(bootCounter, 16)
+    bootCounter = str(bootCounter).zfill(8)
+    recordingSessionName = bootCounter + '--' + sessionID
+    return recordingSessionName
 
 def moveLogFiles(destinationDir, filelists):
     for reccordingSessionName, filelist in sorted(filelists.items()):
@@ -95,7 +109,7 @@ if __name__ == "__main__":
     output_directory = 'D:\\dashcamfilelistoutput'
     log_raw_directory = '/home/xux8/dashcamprocessing/logs'
     log_compressed_directory = '/home/xux8/dashcamprocessing/logscompressed'
-    filelists = generate_filelists(input_directory, fileNames=recordingFiles)
+    filelists = generateFilelists(input_directory, fileNames=recordingFiles)
     write_filelists(filelists, output_directory)
     concat_videos_script(output_directory, '/mnt/e/dashcamvids')
 
