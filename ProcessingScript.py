@@ -59,26 +59,28 @@ def writeFilelists(filelists, outputDirectory):
                 for file_path in files:
                     f.write(f'file \'{file_path}\'\n')
 
-def concat_videos_script(listdir, outdir):
+def concatVideosScript(listdir, outdir):
     scriptFile = open('concat_videos.sh', 'w')
     currentProgress = 0
-    for timestamp in sorted(os.listdir(listdir)):
-        scriptFile.write(f"echo 'Processing {timestamp}'\n")
+    for recordingSessionName in sorted(os.listdir(listdir)):
+        scriptFile.write(f"echo 'Processing {recordingSessionName}'\n")
         scriptFile.write(f"echo 'Progress: {currentProgress}/{len(os.listdir(listdir))}'\n")
-        scriptFile.write(f"mkdir {outdir}{os.sep}{timestamp} > $null\n")
+        scriptFile.write(f"mkdir {outdir}{os.sep}{recordingSessionName} > $null\n")
         currentProgress += 1
-        listsubdirpath = os.path.join(listdir, timestamp)
+        listsubdirpath = os.path.join(listdir, recordingSessionName)
         assert(os.path.isdir(listsubdirpath))
-        for list_file in os.listdir(listsubdirpath):
-            assert(list_file.endswith('.txt'))
-            list_file_path = os.path.join(listsubdirpath, list_file)
-            output_file_type = list_file[0:-4]  # Assuming the first character represents the file type (A, B, or C)
-            output_file_path = os.path.join(outdir, timestamp, output_file_type)
+        for listFile in os.listdir(listsubdirpath):
+            assert(listFile.endswith('.txt'))
+            listFilePath = os.path.join(listsubdirpath, listFile)
+            outputFileType = listFile[0:-4]  # Assuming the first character represents the file type (A, B, or C)
+            outputFilePath = os.path.join(outdir, recordingSessionName, outputFileType)
             
-            concat_command = f"ffmpeg -loglevel error -f concat -safe 0 -i {list_file_path} -c copy {output_file_path}.mp4"
+            concat_command = f"ffmpeg -loglevel error -f concat -safe 0 -i {listFilePath} -c copy {outputFilePath}.mp4"
             scriptFile.write(concat_command + '\n')
-            # os.system(concat_command)
-            # print(f"Concatenation for {list_file} completed.")
+            pass
+        scriptFile.write(f"echo 'Finished processing {recordingSessionName}'\n")
+    scriptFile.write(f"echo 'Finished processing all videos'\n")
+    scriptFile.write(f"aws s3 sync {outdir} {S3_DESTINATION_URI}")
 
 def logFileScript7z(log_raw_directory, log_compressed_directory):
     # compress all log files in log_raw_directory to log_compressed_directory
@@ -102,16 +104,17 @@ def logFileScript7z(log_raw_directory, log_compressed_directory):
             files_to_compress = sorted(files_to_compress, key=lambda x: int(x.split('-')[-1]))
             compress_command = f"7z a -t7z -m0=lzma2 -mx=9 -mfb=64 -md=64m -ms=on {output_file_path}.7z {' '.join(files_to_compress)}"
             scriptFile.write(compress_command + '\n')
+        scriptFile.close()
 
 
 if __name__ == "__main__":
     input_directory = 'D:\\dch'
     output_directory = 'D:\\dashcamfilelistoutput'
-    log_raw_directory = '/home/xux8/dashcamprocessing/logs'
-    log_compressed_directory = '/home/xux8/dashcamprocessing/logscompressed'
+    # log_raw_directory = '/home/xux8/dashcamprocessing/logs'
+    # log_compressed_directory = '/home/xux8/dashcamprocessing/logscompressed'
     filelists = generateFilelists(input_directory, fileNames=recordingFiles)
     writeFilelists(filelists, output_directory)
-    concat_videos_script(output_directory, '/mnt/e/dashcamvids')
+    concatVideosScript(output_directory, 'D:\\schconsolidatedfiles')
 
     #filelists = generate_filelists(input_directory, fileNames=logFiles)
     #moveLogFiles(log_raw_directory, filelists)
