@@ -60,7 +60,7 @@ def writeFilelists(filelists, outputDirectory):
                     f.write(f'file \'{file_path}\'\n')
 
 def concatVideosScript(listdir, outdir):
-    scriptFile = open('concat_videos.sh', 'w')
+    scriptFile = open('concat_videos.ps1', 'w')
     currentProgress = 0
     for recordingSessionName in sorted(os.listdir(listdir)):
         scriptFile.write(f"echo 'Processing {recordingSessionName}'\n")
@@ -86,7 +86,7 @@ def logFileScript7z(log_raw_directory, log_compressed_directory):
     # compress all log files in log_raw_directory to log_compressed_directory
     # compress rlogs and qlogs separately
     # compress rlogs-0, rlogs-1, etc together to rlogs.7z, same for qlogs
-    scriptFile = open('compress_logs.sh', 'w')
+    scriptFile = open('compress_logs.ps1', 'w')
     currentProgress = 0
     for timestamp in sorted(os.listdir(log_raw_directory)):
         scriptFile.write(f"echo 'Processing {timestamp}'\n")
